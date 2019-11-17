@@ -92,7 +92,7 @@ _dev_completer() {
 
   # We are trying to complete a group name
   if [[ $ENTRY == "dev" ]] && [[ $COMP_WORDCOUNT -eq 2 ]]; then
-    DEV_GROUPS="$(find ~/dev -maxdepth 1 -mindepth 1 -type d -exec basename {} \;)"
+    DEV_GROUPS="$(find -L ~/dev -maxdepth 1 -mindepth 1 -type d -exec basename {} \;)"
     $DEBUG && echo "DEV_GROUPS [$DEV_GROUPS]"
     COMPREPLY=( $(compgen -W "$DEV_GROUPS" -- $CURRENT ) );
 
@@ -111,7 +111,7 @@ _dev_completer() {
     if [[ ! -z $CURRENT ]] && [[ -d $GROUP_PATH/$CURRENT ]]; then
       return
     fi
-    LOCAL_REPOS="$(find $GROUP_PATH -maxdepth 1 -mindepth 1 -type d -exec basename {} \;)"
+    LOCAL_REPOS="$(find -L $GROUP_PATH -maxdepth 1 -mindepth 1 -type d -exec basename {} \;)"
     GITHUB_REPOS="$(_dev_github_org_repos $GROUP | jq '.[].name' -r)"
     REPOS="$(echo -e "$LOCAL_REPOS\n$GITHUB_REPOS" | sort | uniq)"
     $DEBUG && echo "REPOS [$REPOS]"
@@ -153,8 +153,7 @@ dev() {
   fi
 }
 
-for DIR in $(echo $DEV_HOME/*); do
-  GROUP=$(basename $DIR)
+for GROUP in $(find -L $DEV_HOME -mindepth 1 -maxdepth 1 -type d -exec basename {} \;); do
   eval "$(cat <<EOF
 $GROUP() {
   dev "\$@"
